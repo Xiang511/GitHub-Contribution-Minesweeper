@@ -6,7 +6,7 @@
 ![Minesweeper](https://img.shields.io/badge/game-minesweeper-9be9a8?style=flat-square)
 ![SVG](https://img.shields.io/badge/export-SVG%20animation-30a14e?style=flat-square)
 
-
+![SVG](./replay-animation.svg)
 
 
 
