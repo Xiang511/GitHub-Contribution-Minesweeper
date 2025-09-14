@@ -1,10 +1,11 @@
 # GitHub Contribution Minesweeper
 
-![Stars](https://img.shields.io/github/stars/owner/repo?style=flat-square&color=ffd700)
+![Stars](https://img.shields.io/github/stars/xiang511/GitHub-Contribution-Minesweeper?style=flat-square)
+![Language](https://img.shields.io/badge/i18n-zh%2Fen-informational?style=flat-square)
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square)
 ![Minesweeper](https://img.shields.io/badge/game-minesweeper-9be9a8?style=flat-square)
 ![SVG](https://img.shields.io/badge/export-SVG%20animation-30a14e?style=flat-square)
-![Language](https://img.shields.io/badge/i18n-zh%2Fen-informational?style=flat-square)
+
 
 
 
