@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>GitHub Contribution Minesweeper</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #24292f;
+      --border: #d0d7de;
+      --muted: #57606a;
+      --accent-bg: #f6f8fa;
+      --panel-bg: #ffffff;
+      --btn-bg: #f6f8fa;
+      --btn-border: #d0d7de;
+      --btn-hover: #eef1f4;
+      --shadow: 0 2px 4px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
+      --log-bg: #f6f8fa;
+      --win: #2da44e;
+      --lose: #cf222e;
+      --playing: #0969da;
+      --progress-bg: #e1e4e8;
+      --progress-fill: #0969da;
+    }
+
+    .theme-dark {
+      --bg: #0d1117;
+      --fg: #c9d1d9;
+      --border: #30363d;
+      --muted: #8b949e;
+      --accent-bg: #161b22;
+      --panel-bg: #161b22;
+      --btn-bg: #21262d;
+      --btn-border: #30363d;
+      --btn-hover: #30363d;
+      --shadow: 0 2px 4px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+      --log-bg: #0d1117;
+      --progress-bg: #30363d;
+      --progress-fill: #2382ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      padding: 18px 24px 8px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: .5em;
+      justify-content: center;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      margin: 0;
+      font-weight: 600;
+      letter-spacing: .5px;
+    }
+
+    main {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      padding: 0 24px 40px;
+    }
+
+    .panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px 20px;
+      box-shadow: var(--shadow);
+      position: relative;
+      width: 100%;
+    }
+
+    .panel h3 {
+      margin: 0 0 12px;
+      font-size: 0.95rem;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      font-weight: 600;
+      opacity: .85;
+    }
+
+    #leftCol {
+      flex: 1 1 380px;
+      min-width: 340px;
+    }
+
+    #rightCol {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      width: 100%;
+    }
+
+    input,
+    button,
+    select {
+      background: var(--btn-bg);
+      border: 1px solid var(--btn-border);
+      color: var(--fg);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    input:focus,
+    button:focus,
+    select:focus {
+      outline: 2px solid #0969da55;
+      outline-offset: 1px;
+    }
+
+    button {
+      cursor: pointer;
+      transition: background .15s, transform .15s;
+    }
+
+    button:hover {
+      background: var(--btn-hover);
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    #controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px 12px;
+      margin-bottom: 12px;
+    }
+
+    #boardWrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    #board {
+      border: 1px solid var(--border);
+      padding: 10px;
+      display: inline-block;
+      background: var(--accent-bg);
+      border-radius: 10px;
+      width: 100%;
+      overflow: auto;
+    }
+
+    #statusRow {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    #status {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .5px;
+      border: 1px solid var(--border);
+      background: var(--accent-bg);
+    }
+
+    .badge.playing {
+      color: var(--playing);
+    }
+
+    .badge.won {
+      color: var(--win);
+    }
+
+    .badge.lost {
+      color: var(--lose);
+    }
+
+    .small {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    #log {
+      white-space: pre-line;
+      font-size: 0.7rem;
+      max-height: 220px;
+      overflow: auto;
+      background: var(--log-bg);
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      line-height: 1.25;
+    }
+
+    #contribChart {
+      width: 100%;
+      overflow-x: scroll;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 6px;
+      background: #ddf4ff;
+      color: #0969da;
+      border: 1px solid #54aeff;
+      border-radius: 999px;
+      font-size: 11px;
+    }
+
+    .theme-dark .pill {
+      background: #13283f;
+      color: #58a6ff;
+      border-color: #1f6feb;
+    }
+
+    .progressBar {
+      position: relative;
+      width: 100%;
+      height: 6px;
+      background: var(--progress-bg);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .progressFill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: var(--progress-fill);
+      transition: width .25s;
+    }
+
+    .stepsText {
+      font-size: 11px;
+      letter-spacing: .5px;
+      opacity: .7;
+      margin-top: 4px;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 11px;
+      padding: 18px 0 32px;
+      color: var(--muted);
+    }
+
+    .flexRow {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    label {
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-weight: 500;
+    }
+
+    label.inline {
+      flex-direction: row;
+      align-items: center;
+      font-weight: 400;
+    }
+
+    .btnGroup {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    @media screen and (min-width:992px) {
+      header {
+        justify-content: flex-start;
+      }
+
+      main {
+        flex-wrap: nowrap;
+      }
+
+      #leftCol {
+        width: 60%;
+      }
+
+      #rightCol {
+        flex-direction: column;
+        gap: 18px;
+        width: 40%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1 data-i18n="title">GitHub 貢獻圖踩地雷</h1><span id="themeTag" class="pill">Light</span>
+
+  </header>
+  <main>
+    <section id="leftCol" class="panel">
+      <h3 data-i18n="panel.settings">遊戲設定 / 控制</h3>
+      <div id="controls">
+        <label><span data-i18n="label.user">使用者</span>
+          <input id="username" placeholder="username" />
+        </label>
+        <label><span data-i18n="label.ratio">地雷比例</span>
+          <input id="ratio" type="number" step="0.01" min="0.01" max="0.5" value="0.1" />
+        </label>
+        <label><span data-i18n="label.year">年度</span>
+          <input id="yearInput" type="number" placeholder="2024" />
+        </label>
+        <label><span data-i18n="label.theme">主題</span>
+          <select id="themeSelect">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </label>
+        <label>
+          <span data-i18n="lang">語言</span>
+          <select id="langSelect">
+            <option value="zh">繁中</option>
+            <option value="en">English</option>
+          </select>
+        </label>
+        <label class="inline"><input type="checkbox" id="noMock" /> <span data-i18n="label.strict">嚴格模式(找不到資料時使用假資料)</span></label>
+        <div class="btnGroup" style="grid-column:1/-1;">
+          <button id="loadBtn" data-i18n="btn.load">載入/重建</button>
+          <button id="autoBtn" disabled data-i18n="btn.autoStep">自動一步</button>
+          <button id="autoRunBtn" disabled data-i18n="btn.autoRun">自動連續</button>
+          <button id="solveBtn" disabled data-i18n="btn.solve">自動解到結束</button>
+          <button id="replayBtn" disabled data-i18n="btn.replay">回放</button>
+        </div>
+        <div class="btnGroup" style="grid-column:1/-1;">
+          <button id="exportBtn" disabled data-i18n="btn.exportBoard">匯出盤面 SVG</button>
+          <button id="exportAnimBtn" disabled data-i18n="btn.exportAnim">匯出回放動畫</button>
+        </div>
+        <label style="grid-column:1/-1;"><span data-i18n="label.speed">回放速度</span>
+          <select id="speedSelect">
+            <option value="0.25">0.25x</option>
+            <option value="0.5">0.5x</option>
+            <option value="1">1x</option>
+            <option value="2" selected>2x</option>
+            <option value="4">4x</option>
+            <option value="8">8x</option>
+            <option value="16">16x</option>
+            <option value="32">32x</option>
+          </select>
+        </label>
+      </div>
+      <div id="boardWrapper">
+        <div id="statusRow">
+          <div id="status" class="badge playing">尚未載入</div>
+          <div id="stepsInfo" class="stepsText"></div>
+        </div>
+        <div class="progressBar">
+          <div id="replayProgress" class="progressFill"></div>
+        </div>
+        <div id="board"></div>
+        <div class="small" data-i18n="hint.play">左鍵開格、右鍵插旗。低貢獻日更容易是地雷。</div>
+      </div>
+    </section>
+    <section id="rightCol">
+      <div class="panel">
+        <h3 data-i18n="panel.contrib">貢獻熱度圖</h3>
+        <div id="contribChart"></div>
+      </div>
+      <div class="panel">
+        <h3 data-i18n="panel.log">事件日誌</h3>
+        <div id="log"></div>
+      </div>
+    </section>
+  </main>
+  <footer>GitHub Minesweeper Demo · <a href="https://github.com/Xiang511">Xiang511</a></footer>
+  <script type="module">
+    import {
+      fetchContributionsWithFallback,
+      fetchContributionsSmart,
+      mapContributionsToBoard,
+      placeMinesByContribution,
+      normalizeTrailingYear,
+      normalizeCalendarYear
+    } from './github-integration.js';
+    import {
+      computeAdjacents,
+      revealCell,
+      toggleFlag,
+      CellState
+    } from './minesweeper-types.js';
+    import {
+      renderBoard,
+      updateBoardSVG,
+      exportCurrentSVG,
+      exportReplayAnimation,
+      setTheme,
+      getTheme
+    } from './svg-creator.js';
+    import {
+      renderContributionChart,
+      updateContributionChart
+    } from './contributions-chart.js';
+    import {
+      autoStep,
+      autoPlay,
+      autoSolve,
+      createSnapshot,
+      rebuildBoardFromSnapshot,
+      applyActionsSequential
+    } from './auto-player.js';
+
+    const usernameEl = document.getElementById('username');
+    const ratioEl = document.getElementById('ratio');
+    const loadBtn = document.getElementById('loadBtn');
+    const autoBtn = document.getElementById('autoBtn');
+    const autoRunBtn = document.getElementById('autoRunBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const solveBtn = document.getElementById('solveBtn');
+    const replayBtn = document.getElementById('replayBtn');
+    const exportAnimBtn = document.getElementById('exportAnimBtn');
+    const speedSelect = document.getElementById('speedSelect');
+    const statusEl = document.getElementById('status');
+    const replayProgressEl = document.getElementById('replayProgress');
+    const stepsInfoEl = document.getElementById('stepsInfo');
+    const themeSelect = document.getElementById('themeSelect');
+    const themeTag = document.getElementById('themeTag');
+    const noMockEl = document.getElementById('noMock');
+    const yearInput = document.getElementById('yearInput');
+    const boardMount = document.getElementById('board');
+    const contribChartEl = document.getElementById('contribChart');
+    const logEl = document.getElementById('log');
+    const langSelect = document.getElementById('langSelect');
+    let currentLang = 'zh';
+
+    const I18N = {
+      zh: {
+        title: 'GitHub 貢獻圖踩地雷',
+        lang: '語言',
+        'panel.settings': '遊戲設定 / 控制',
+        'panel.contrib': '貢獻熱度圖',
+        'panel.log': '事件日誌',
+        'label.user': '使用者',
+        'label.ratio': '地雷比例',
+        'label.year': '年度',
+        'label.theme': '主題',
+        'label.strict': '嚴格模式(找不到資料時使用假資料)',
+        'label.speed': '回放速度',
+        'btn.load': '載入/重建',
+        'btn.autoStep': '自動一步',
+        'btn.autoRun': '自動連續',
+        'btn.solve': '自動解到結束',
+        'btn.replay': '回放',
+        'btn.exportBoard': '匯出盤面 SVG',
+        'btn.exportAnim': '匯出回放動畫',
+        'hint.play': '左鍵開格、右鍵插旗。低貢獻日更容易是地雷。',
+        statusPrefix: '狀態',
+        mines: '雷',
+        opened: '已開',
+        loading: '載入中...',
+        doneSuffix: ' | 完成',
+        win: '🎉 你贏了!',
+        lose: '💥 Boom 遊戲結束',
+        'log.noStep': '無可推論步驟',
+        'log.startFetch': '開始抓取貢獻資料',
+        'log.buildDone': '建立完成',
+        'log.noData': '無回放資料',
+        'log.noSnapshot': '缺少 snapshot，請重新載入並解局',
+        'log.replayStart': '開始回放...',
+        'log.replayEnd': '回放完成',
+        'log.exportBoardOk': '已匯出 SVG',
+        'log.exportBoardFail': '匯出失敗',
+        'log.exportAnimOk': '已匯出回放動畫 SVG'
+      },
+      en: {
+        title: 'GitHub Contribution Minesweeper',
+        lang: 'Language',
+        'panel.settings': 'Settings / Controls',
+        'panel.contrib': 'Contribution Heatmap',
+        'panel.log': 'Event Log',
+        'label.user': 'User',
+        'label.ratio': 'Mine Ratio',
+        'label.year': 'Year',
+        'label.theme': 'Theme',
+        'label.strict': 'Strict Mode (no mock if fetch fails)',
+        'label.speed': 'Replay Speed',
+        'btn.load': 'Load / Rebuild',
+        'btn.autoStep': 'Auto Step',
+        'btn.autoRun': 'Auto Run',
+        'btn.solve': 'Auto Solve',
+        'btn.replay': 'Replay',
+        'btn.exportBoard': 'Export Board SVG',
+        'btn.exportAnim': 'Export Replay SVG',
+        'hint.play': 'Left click: reveal. Right click: flag. Low contributions = higher mine chance.',
+        statusPrefix: 'Status',
+        mines: 'Mines',
+        opened: 'Opened',
+        loading: 'Loading...',
+        doneSuffix: ' | Done',
+        win: '🎉 You Win!',
+        lose: '💥 Boom Game Over',
+        'log.noStep': 'No deducible move',
+        'log.startFetch': 'Fetching contributions',
+        'log.buildDone': 'Build done',
+        'log.noData': 'No replay data',
+        'log.noSnapshot': 'Missing snapshot. Rebuild & solve again.',
+        'log.replayStart': 'Replay start...',
+        'log.replayEnd': 'Replay finished',
+        'log.exportBoardOk': 'Board SVG exported',
+        'log.exportBoardFail': 'Export failed',
+        'log.exportAnimOk': 'Replay animation SVG exported'
+      }
+    };
+
+    function t(key) {
+      return (I18N[currentLang] && I18N[currentLang][key]) || (I18N['zh'][key] || key);
+    }
+
+    function applyStaticTexts() {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const k = el.getAttribute('data-i18n');
+        el.textContent = t(k);
+      });
+    }
+    langSelect.addEventListener('change', () => {
+      currentLang = langSelect.value;
+      applyStaticTexts();
+      refresh(); // 重新顯示狀態字串
+    });
+
+    let board = null;
+    let loading = false;
+    let lastActions = [];
+    let originalSnapshot = null;
+
+    function log(msg) {
+      const ts = new Date().toLocaleTimeString();
+      logEl.textContent = `[${ts}] ${msg}\n` + logEl.textContent;
+    }
+
+    function setStatusBadge(stateText, state) {
+      statusEl.textContent = stateText;
+      statusEl.classList.remove('playing', 'won', 'lost');
+      statusEl.classList.add(state);
+    }
+
+    function syncDocTheme() {
+      const key = themeSelect.value;
+      if (key === 'dark') document.documentElement.classList.add('theme-dark');
+      else document.documentElement.classList.remove('theme-dark');
+    }
+
+    function refresh() {
+      updateBoardSVG(board, boardMount);
+      if (!board) return;
+      let stateClass = 'playing';
+      if (board.status === 'won') stateClass = 'won';
+      else if (board.status === 'lost') stateClass = 'lost';
+      setStatusBadge(`${t('statusPrefix')}: ${board.status} | ${t('mines')} ${board.mines} | ${t('opened')} ${board.revealed}`, stateClass);
+      if (board.status !== 'playing') {
+        log(board.status === 'won' ? t('win') : t('lose'));
+      }
+      themeTag.textContent = getTheme().name;
+    }
+
+    async function build() {
+      const username = usernameEl.value.trim();
+      const ratio = Number(ratioEl.value) || 0.1;
+      if (!username) {
+        alert('請輸入使用者名稱');
+        return;
+      }
+      try {
+        loading = true;
+        statusEl.textContent = t('loading');
+        log(t('log.startFetch'));
+        const allowMock = !noMockEl.checked;
+        // 計算最近一年的日期範圍 (含今日，共約 365 天)，GitHub 通常顯示 52 週 ~ 371 天視週起點
+        let days;
+        const yearVal = yearInput.value.trim();
+        if (yearVal) {
+          const y = Number(yearVal);
+          // 將抓取範圍設為該年度 (from/to) 之後再用 normalizeCalendarYear 補齊
+          const from = `${y}-01-01`;
+          const to = `${y}-12-31`;
+          const raw = await fetchContributionsSmart(username, {
+            from,
+            to,
+            useMockOnError: allowMock
+          });
+          days = normalizeCalendarYear(y, raw);
+        } else {
+          const raw = await fetchContributionsSmart(username, {
+            useMockOnError: allowMock
+          });
+          days = normalizeTrailingYear(raw);
+        }
+        renderContributionChart(days, contribChartEl);
+        if (!days || !days.length) throw new Error('無資料 (含模擬)');
+        log(`使用資料筆數 ${days.length}${days.mock ? ' (mock)' : ''}`);
+        board = mapContributionsToBoard(days);
+        placeMinesByContribution(board, ratio);
+        computeAdjacents(board);
+        renderBoard(board, boardMount, () => refresh());
+        refresh();
+        autoBtn.disabled = false;
+        autoRunBtn.disabled = false;
+        exportBtn.disabled = false;
+        exportAnimBtn.disabled = true;
+        solveBtn.disabled = false;
+        replayBtn.disabled = true;
+        statusEl.textContent += ' | 完成';
+        log(t('log.buildDone'));
+        originalSnapshot = createSnapshot(board);
+        stepsInfoEl.textContent = '';
+        replayProgressEl.style.width = '0%';
+      } catch (e) {
+        console.error(e);
+        statusEl.textContent = 'Error: ' + e.message;
+        log('Error: ' + e.message);
+      } finally {
+        loading = false;
+      }
+    }
+
+    loadBtn.addEventListener('click', build);
+
+    themeSelect.addEventListener('change', () => {
+      setTheme(themeSelect.value);
+      syncDocTheme();
+      // 重新渲染 (若已有棋盤)
+      if (board) {
+        renderBoard(board, boardMount, () => refresh());
+        refresh();
+      }
+      // 更新貢獻圖顏色
+      const svg = contribChartEl.querySelector('svg');
+      if (svg) {
+        // 重新著色
+        const rects = svg.querySelectorAll('rect[data-date]');
+        const days = Array.from(rects).map(r => ({
+          date: r.getAttribute('data-date'),
+          count: Number(r.getAttribute('data-count'))
+        }));
+        updateContributionChart(days, contribChartEl);
+      }
+      themeTag.textContent = getTheme().name;
+    });
+
+    autoBtn.addEventListener('click', () => {
+      if (!board) return;
+      const changed = autoStep(board);
+      refresh();
+      if (!changed) log(t('log.noStep'));
+    });
+
+    autoRunBtn.addEventListener('click', () => {
+      if (!board) return;
+      const steps = autoPlay(board, 500);
+      refresh();
+      log(`Auto steps=${steps}`);
+    });
+
+    exportBtn.addEventListener('click', () => {
+      try {
+        exportCurrentSVG(boardMount);
+        log(t('log.exportBoardOk'));
+      } catch (e) {
+        log(t('log.exportBoardFail') + ': ' + e.message);
+      }
+    });
+
+    solveBtn.addEventListener('click', () => {
+      if (!board) return;
+      const {
+        actions,
+        status
+      } = autoSolve(board, 5000, true);
+      lastActions = actions;
+      refresh();
+      log(`Solve status=${status} actions=${actions.length}`);
+      if (actions.length) {
+        replayBtn.disabled = false;
+        exportAnimBtn.disabled = false;
+      }
+    });
+
+    replayBtn.addEventListener('click', async () => {
+      if (!lastActions.length) {
+        log(t('log.noData'));
+        return;
+      }
+      if (!originalSnapshot) {
+        log(t('log.noSnapshot'));
+        return;
+      }
+      // 重建初始盤面
+      const {
+        createBoardStructure
+      } = await import('./minesweeper-types.js');
+      board = rebuildBoardFromSnapshot(originalSnapshot, {
+        createBoardStructure
+      });
+      renderBoard(board, boardMount, () => refresh());
+      refresh();
+      log(t('log.replayStart'));
+      const total = lastActions.length;
+      stepsInfoEl.textContent = `回放: 0 / ${total}`;
+      replayProgressEl.style.width = '0%';
+      let current = 0;
+      const speed = Number(speedSelect.value) || 1; // 倍率
+      const interval = 500 / speed; // 1x=500ms, 2x=250ms, 4x=125ms, 8x≈62.5ms, 16x≈31ms, 32x≈16ms
+      await applyActionsSequential(board, lastActions, () => {
+        current++;
+        stepsInfoEl.textContent = `回放: ${current} / ${total}`;
+        replayProgressEl.style.width = `${(current/total)*100}%`;
+        refresh();
+      }, interval);
+      stepsInfoEl.textContent += ' (完成)';
+      log(t('log.replayEnd'));
+    });
+
+    exportAnimBtn.addEventListener('click', () => {
+      if (!lastActions.length || !originalSnapshot) {
+        log('無回放資料');
+        return;
+      }
+      // 將選單值視為 stepSeconds (基準 0.5s = 2x 原 1s)
+      const speed = Number(speedSelect.value) || 1;
+      const stepSeconds = 1 / speed; // 1x=1s, 2x=0.5s, 4x=0.25s, 8x=0.125s, 16x=0.0625s, 32x=0.03125s
+      exportReplayAnimation(originalSnapshot, lastActions, 'replay-animation.svg', {
+        stepSeconds
+      });
+      log(t('log.exportAnimOk'));
+    });
+
+    // 預設測試用
+    //   usernameEl.value = 'xiang511';
+    themeTag.textContent = getTheme().name;
+    syncDocTheme();
+    applyStaticTexts();
+  </script>
+</body>
+
+</html>
