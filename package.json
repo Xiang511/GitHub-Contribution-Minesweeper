@@ -1,0 +1,39 @@
+{
+  "name": "github-contribution-minesweeper",
+  "version": "0.1.0",
+  "description": "Generate Minesweeper board SVG / animation from a GitHub user's contribution graph via CLI or API.",
+  "type": "module",
+  "bin": {
+    "gh-contrib-minesweeper": "src/cli.js"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "keywords": [
+    "github",
+    "contributions",
+    "contributions-graph",
+    "minesweeper",
+    "svg",
+    "cli",
+    "animation"
+  ],
+  "author": "Xiang511",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Xiang511/GitHub-Contribution-Minesweeper"
+  },
+  "bugs": {
+    "url": "https://github.com/Xiang511/GitHub-Contribution-Minesweeper/issues"
+  },
+  "homepage": "https://github.com/Xiang511/GitHub-Contribution-Minesweeper",
+  "files": [
+    "src/",
+    "README.md",
+    "LICENSE"
+  ]
+}
