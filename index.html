@@ -5,9 +5,6 @@
   <meta charset="UTF-8" />
   <title>GitHub Contribution Minesweeper</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #ffffff;
@@ -101,6 +98,13 @@
     #leftCol {
       flex: 1 1 380px;
       min-width: 340px;
+    }
+
+    .note {
+      font-size: 11px;
+      color: var(--muted);
+      align-self: center;
+      display: block;
     }
 
     #rightCol {
@@ -356,14 +360,20 @@
         <label class="inline"><input type="checkbox" id="noMock" /> <span data-i18n="label.strict">嚴格模式(找不到資料時使用假資料)</span></label>
         <div class="btnGroup" style="grid-column:1/-1;">
           <button id="loadBtn" data-i18n="btn.load">載入/重建</button>
-          <button id="autoBtn" disabled data-i18n="btn.autoStep">自動一步</button>
-          <button id="autoRunBtn" disabled data-i18n="btn.autoRun">自動連續</button>
+          <button id="autoBtn" style="display: none;" disabled data-i18n="btn.autoStep">自動一步</button>
+          <button id="autoRunBtn" style="display: none;" disabled data-i18n="btn.autoRun">自動連續</button>
           <button id="solveBtn" disabled data-i18n="btn.solve">自動解到結束</button>
           <button id="replayBtn" disabled data-i18n="btn.replay">回放</button>
+          <button id="exportAnimBtn" disabled data-i18n="btn.exportAnim">匯出回放動畫</button>
         </div>
         <div class="btnGroup" style="grid-column:1/-1;">
-          <button id="exportBtn" disabled data-i18n="btn.exportBoard">匯出盤面 SVG</button>
-          <button id="exportAnimBtn" disabled data-i18n="btn.exportAnim">匯出回放動畫</button>
+          <div class="div"><span class="note" data-i18n="note">*請先在地圖上開啟一個區塊再使用 ```自動解到結束```功能</span>
+            <span class="note" data-i18n="note2">*回放功能僅限點選```自動解到結束```才會作用</span>
+          </div>
+
+
+          <button id="exportBtn" style="display: none;" disabled data-i18n="btn.exportBoard">匯出盤面 SVG</button>
+
         </div>
         <label style="grid-column:1/-1;"><span data-i18n="label.speed">回放速度</span>
           <select id="speedSelect">
@@ -401,7 +411,7 @@
       </div>
     </section>
   </main>
-  <footer>GitHub Minesweeper Demo · <a href="https://github.com/Xiang511">Xiang511</a></footer>
+  <footer>GitHub Minesweeper Demo · <a href="https://github.com/Xiang511/GitHub-Contribution-Minesweeper">Xiang511</a></footer>
   <script type="module">
     import {
       fetchContributionsWithFallback,
@@ -482,6 +492,8 @@
         'btn.exportBoard': '匯出盤面 SVG',
         'btn.exportAnim': '匯出回放動畫',
         'hint.play': '左鍵開格、右鍵插旗。低貢獻日更容易是地雷。',
+        'note': '* 請先在地圖上開啟一個區塊再使用 ```自動解到結束```功能',
+        'note2': '* 回放功能僅限點選```自動解到結束```才會作用',
         statusPrefix: '狀態',
         mines: '雷',
         opened: '已開',
@@ -520,6 +532,8 @@
         'btn.exportBoard': 'Export Board SVG',
         'btn.exportAnim': 'Export Replay SVG',
         'hint.play': 'Left click: reveal. Right click: flag. Low contributions = higher mine chance.',
+        'note': '* Please reveal one cell on the board before using "Auto Solve" feature',
+        'note2': '* Replay feature only works after clicking "Auto Solve"',
         statusPrefix: 'Status',
         mines: 'Mines',
         opened: 'Opened',
